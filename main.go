@@ -15,14 +15,8 @@ var result int
 
 var isRoman bool
 var isArabic bool
-var exit bool
 
 const operators = "+-/*"
-
-func errExit(i int) {
-	fmt.Println(errStrings[i])
-	exit = true
-}
 
 func getRomanNum(number int) string {
 
@@ -67,11 +61,10 @@ func main() {
 		// Обнуление переменных
 		isRoman = false
 		isArabic = false
-		exit = false
 		operator = ""
 		numbers = numbers[:0]
 
-		fmt.Println("Введите значение:")
+		fmt.Println("Введите значение (или 'exit' для завершения программы):")
 		text, _ := reader.ReadString('\n')
 		text = strings.TrimSpace(text)
 
@@ -88,71 +81,68 @@ func main() {
 			romanNumber := romanMap[v] // римская цифра, если такая имеется
 			if romanNumber != 0 {
 				if isArabic { // ошибка если уже есть арабские цифры
-					errExit(2)
-					break
+					panic(errStrings[2])
+
 				} else if len(numbers) < 2 {
 					numbers = append(numbers, romanNumber)
 					isRoman = true
+
 				} else { // ошибка если больше двух чисел в строке
-					errExit(3)
-					break
+					panic(errStrings[3])
 				}
 
 			} else if toNumber, err := strconv.Atoi(v); err == nil {
 				if isRoman { // ошибка если уже есть римские цифры
-					errExit(1)
-					break
+					panic(errStrings[1])
+
 				} else if toNumber < 1 || toNumber > 10 { // ошибка если число выходит за допустимые пределы
-					errExit(4)
-					break
+					panic(errStrings[4])
+
 				} else if len(numbers) < 2 {
 					numbers = append(numbers, toNumber)
 					isArabic = true
+
 				} else {
-					errExit(3) // ошибка если больше двух чисел в строке
-					break
+					panic(errStrings[3])
 				}
 
 			} else if len(v) == 1 && strings.Contains(operators, v) {
 
 				if i != 1 { // ошибка если оператор не между числами
-					errExit(2)
-					break
+					panic(errStrings[2])
 				}
 
 				if operator == "" {
 					operator = v
 				} else { // ошибка если больше одного оператора
-					errExit(3)
-					break
+					panic(errStrings[3])
 				}
 			}
 		}
 
-		if !exit { // пропуск вычисления если были ошибки
-			if len(numbers) != 2 || operator == "" {
-				fmt.Println(errStrings[2])
+		if len(numbers) != 2 || operator == "" {
+			panic(errStrings[2])
+
+		} else {
+
+			switch operator {
+			case "+":
+				result = numbers[0] + numbers[1]
+			case "-":
+				result = numbers[0] - numbers[1]
+			case "*":
+				result = numbers[0] * numbers[1]
+			case "/":
+				result = numbers[0] / numbers[1]
+			}
+
+			if !isRoman {
+				fmt.Println(result)
 			} else {
-
-				switch operator {
-				case "+":
-					result = numbers[0] + numbers[1]
-				case "-":
-					result = numbers[0] - numbers[1]
-				case "*":
-					result = numbers[0] * numbers[1]
-				case "/":
-					result = numbers[0] / numbers[1]
-				}
-
-				if !isRoman {
-					fmt.Println(result)
+				if result <= 0 {
+					panic(errStrings[0])
 				} else {
-					if result <= 0 {
-						fmt.Println(errStrings[0])
-					} else {
-						fmt.Println(getRomanNum(result))
-					}
+					fmt.Println(getRomanNum(result))
 				}
 			}
 		}
